@@ -1,2 +1,9 @@
-# hierarchical-sweep
-Extending the capabilities of Weights and Biases sweep.
+# DySweep: Use W&B Sweep for Everything!
+
+## Installation
+
+```bash
+pip install dysweep
+```
+
+## Usage
