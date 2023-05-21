@@ -1,0 +1,19 @@
+{
+    "data": {
+        "chiz": [
+            10,
+            2,
+            3
+        ],
+        "dataset": "cifar10",
+        "batch_size": 128
+    },
+    "model": {
+        "type": "resnet",
+        "depth": 20
+    },
+    "optimizer": {
+        "lr": 0.1,
+        "type": true
+    }
+}

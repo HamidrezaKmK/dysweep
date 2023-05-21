@@ -19,8 +19,22 @@ SWEEP_LIST_INSERT = "sweep_insert"
 SWEEP_LIST_REMOVE = "sweep_remove"
 SWEEP_LIST_OVERWRITE = "sweep_overwrite"
 SWEEP_OPERATION_VAL = "dy_eval"
+
 SPLIT = "-"
 EXCEPTION_OCCURED = False
+
+SPECIAL_KEYS = [
+    SWEEP_INDICATION,
+    UNIQUE_NAME_IDENT,
+    VALUES_DISPLAY_NAME,
+    SWEEP_GROUP,
+    SWEEP_LIST_OPERATIONS,
+    UPSERT_GROUP_IDENTIFIER,
+    SWEEP_OPERATION_VAL,
+    SWEEP_LIST_INSERT,
+    SWEEP_LIST_REMOVE,
+    SWEEP_LIST_OVERWRITE,
+]
 
 compression_mapping = {}
 value_compression_mapping = {}
@@ -169,7 +183,22 @@ def flatten_sweep_config(tree_conf: dict):
     return conf_parameters, rem
 
 
+def sanity_check_special_keys(conf: th.Union[dict, list], current_path: list):
+    if isinstance(conf, dict):
+        for key, val in conf.items():
+            if key in SPECIAL_KEYS:
+                raise Exception(
+                    f"Key {key} is reserved for sweep configuration and cannot be used in {current_path}"
+                )
+            if isinstance(val, dict) or isinstance(val, list):
+                sanity_check_special_keys(val, current_path + [key])
+    elif isinstance(conf, list):
+        for idx, val in enumerate(conf):
+            if isinstance(val, dict) or isinstance(val, list):
+                sanity_check_special_keys(val, current_path + [str(idx)])
 # overwrite args recursively
+
+
 def upsert_config(args: th.Union[th.Dict, th.List],
                   sweep_config: th.Union[th.Dict, th.List, int, float, str],
                   current_path: th.Optional[th.List[str]] = None,
@@ -352,6 +381,13 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                 new_args = upsert_config(
                     args, val, current_path + [f"{UPSERT_GROUP_IDENTIFIER}-{i}"], root_args)
                 args = new_args
+        if len(current_path) == 0:
+            # Sanity check if any of the nested dicts contain special keys
+            # If they do, then we need to throw an error
+            # This is because we don't want to allow the user to specify
+            # a sweep config that has a special key in it
+            sanity_check_special_keys(args, current_path=current_path)
+
     except Exception as e:
         global EXCEPTION_OCCURED
         if not EXCEPTION_OCCURED:
@@ -365,16 +401,48 @@ def upsert_config(args: th.Union[th.Dict, th.List],
             e.args += ("Configuration to upsert: " +
                        json.dumps(sweep_config, indent=2),)
         raise e
+
     return args
 
 
 def standardize_sweep_config(sweep_config: dict):
     global remaining_bunch
-    config_copy = {k: v for k, v in sweep_config.items()}
+    config_copy = {k: v.copy() if isinstance(
+        v, dict) else v for k, v in sweep_config.items()}
     flat, remaining_bunch = flatten_sweep_config(config_copy['parameters'])
     config_copy['parameters'] = compress_parameter_config(flat)
     global compression_mapping, value_compression_mapping
     return config_copy, {'keys': compression_mapping, 'values': value_compression_mapping, 'remaining_bunch': remaining_bunch}
+
+
+def add_where_needed(
+    base: th.Union[th.List, th.Dict],
+    to_add: th.Union[th.List, th.Dict]
+) -> th.Union[th.List, th.Dict]:
+    if isinstance(base, list):
+        if isinstance(to_add, list):
+            for i, val in enumerate(to_add):
+                if i >= len(base):
+                    raise ValueError(
+                        "Cannot add a list to a list where the length of the list to add is greater than the length of the base list")
+                else:
+                    base[i] = add_where_needed(base[i], val)
+        else:
+            raise ValueError(
+                "Cannot add a non-list to a list where the length of the list to add is greater than the length of the base list"
+            )
+    elif isinstance(base, dict):
+        if isinstance(to_add, dict):
+            for key, val in to_add.items():
+                if key not in base:
+                    base[key] = val
+                else:
+                    base[key] = add_where_needed(base[key], val)
+        else:
+            raise ValueError(
+                "Cannot add a non-dict to a dict where the length of the dict to add is greater than the length of the base dict"
+            )
+    return base
 
 
 def destandardize_sweep_config(
@@ -386,8 +454,9 @@ def destandardize_sweep_config(
         compression_mapping = mapping['keys']
         value_compression_mapping = mapping['values']
         remaining_bunch = mapping['remaining_bunch']
-    config_copy = {k: v for k, v in sweep_config.items()}
+    config_copy = {k: v.copy() if isinstance(
+        v, dict) else v for k, v in sweep_config.items()}
     config_copy = unflatten_sweep_config(
         decompress_parameter_config(config_copy))
-
-    return upsert_config(config_copy, remaining_bunch)
+    ret = add_where_needed(config_copy, remaining_bunch)
+    return ret

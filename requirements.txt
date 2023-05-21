@@ -2,3 +2,5 @@ wandb
 torch
 lightning
 jsonargparse
+dypy
+random-word

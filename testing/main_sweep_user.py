@@ -1,8 +1,9 @@
-from hierarchical_sweep import wandbX
-import wandb
-import sys
-from pprint import pprint
 import traceback
+from pprint import pprint
+import wandb
+from dysweep import wandbX
+import sys
+sys.path.append("../")
 
 
 def f():
