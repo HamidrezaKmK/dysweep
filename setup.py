@@ -1,5 +1,5 @@
 from setuptools import setup, find_packages
-from dypy import __version__
+from dysweep import __version__
 
 with open("README.md", encoding="utf-8") as f:
     long_description = f.read()
