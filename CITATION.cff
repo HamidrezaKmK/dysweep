@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+title: '"DySweep": Use W&B Sweep for Everything!'
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Hamid
+    family-names: Kamkari
+    email: hamidrezakamkari@gmail.com
+repository-code: "https://github.com/vahidzee/dypy/"
+abstract: >-
+  A python package for TODO
+keywords:
+  - Lazy Configurations
+license: APACHE
+date-released: "2023-05-21"
