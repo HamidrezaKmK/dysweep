@@ -97,10 +97,8 @@ def agent(sweep_id, function=None, entity=None, project=None, count=None):
     compression = sweep_run.config['compression']
 
     try:
-        wandb.sdk.wandb_run.Run.config = property(
-            _run_decorator._attach(
-                lambda self: hierarchical_config(self._config)
-            )
+        wandb.sdk.wandb_run.Run.hierarchical_config = property(
+            lambda self: hierarchical_config(self.config)
         )
     except Exception as e:
         warnings.warn(

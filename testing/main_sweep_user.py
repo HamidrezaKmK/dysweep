@@ -9,7 +9,7 @@ sys.path.append("../")
 def f():
     try:
         wandb.init(project="hierarchical_sweep")
-        conf = wandb.config
+        conf = wandb.run.hierarchical_config
         pprint(conf)
     except Exception as e:
         print(traceback.format_exc())

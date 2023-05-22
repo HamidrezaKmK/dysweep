@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 import typing as th
 from pathlib import Path
-from .wandbX import sweep, agent
+from .wandbX import sweep, agent, hierarchical_config
 import functools
 from random_word import RandomWords
 import json
@@ -129,7 +129,7 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
                             name=run_name,
                         )
                         experiment_id = logger.experiment.id
-                        sweep_config = logger.experiment.config
+                        sweep_config = hierarchical_config(logger.experiment.config)
                     else:
                         import wandb
                         wandb.init(
@@ -138,12 +138,12 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
                             name=run_name,
                         )
                         experiment_id = wandb.run.id
-                        sweep_config = wandb.config
+                        sweep_config = hierarchical_config(wandb.config)
 
                     new_dir_name = f"{len(all_subdirs)+1}{SPLIT}{experiment_id}"
 
                     os.makedirs(checkpoint_dir / new_dir_name)
-
+                    
                     # dump a json in checkpoint_dir/run_id containing the sweep config
                     with open(checkpoint_dir / new_dir_name / "sweep_config.json", "w") as f:
                         json.dump(sweep_config, f)
@@ -173,5 +173,10 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
             agent(conf.sweep_id, function=modified_function,
                   entity=conf.entity, project=conf.project, count=conf.count)
     else:
-        sweep(conf.base_config, conf.sweep_configuration,
-              entity=conf.entity, project=conf.project)
+        try:
+            sweep(conf.base_config, conf.sweep_configuration,
+                entity=conf.entity, project=conf.project)
+        except Exception as e:
+            print("Exception at creation of sweep:")
+            print(traceback.format_exc())
+            raise e
