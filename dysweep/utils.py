@@ -132,7 +132,7 @@ def flatten_sweep_config(tree_conf: dict):
         ret = {}
         has_something_to_iterate_over = False
         if isinstance(tree_dict, list):
-            rem = []
+            rem = {}
             for idx, val in enumerate(tree_dict):
                 if isinstance(val, dict) or isinstance(val, list):
                     if isinstance(val, dict) and SWEEP_INDICATION in val:
@@ -147,9 +147,9 @@ def flatten_sweep_config(tree_conf: dict):
                             for subkey, subval in flattened.items():
                                 ret[SEPARATOR.join(
                                     [IDX_INDICATOR + str(idx), subkey])] = subval
-                        rem.append(subrem)
+                        rem[IDX_INDICATOR + str(idx)] = subrem
                 else:
-                    rem.append(val)
+                    rem[IDX_INDICATOR + str(idx)] = val
         elif isinstance(tree_dict, dict):
             rem = {}
             if SWEEP_INDICATION in tree_dict:
@@ -377,10 +377,16 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                 new_args = upsert_config(
                     args, val, current_path + [f"{key}"], root_args)
                 args = new_args
-            for i, val in enumerate(all_upsert):
-                new_args = upsert_config(
-                    args, val, current_path + [f"{UPSERT_GROUP_IDENTIFIER}-{i}"], root_args)
-                args = new_args
+            if isinstance(all_upsert, list):
+                for i, val in enumerate(all_upsert):
+                    new_args = upsert_config(
+                        args, val, current_path + [f"{UPSERT_GROUP_IDENTIFIER}-{i}"], root_args)
+                    args = new_args
+            elif isinstance(all_upsert, dict):
+                for key, val in all_upsert.items():
+                    new_args = upsert_config(
+                        args, val, current_path + [f"{UPSERT_GROUP_IDENTIFIER}-{key}"], root_args)
+                    args = new_args
         if len(current_path) == 0:
             # Sanity check if any of the nested dicts contain special keys
             # If they do, then we need to throw an error
@@ -412,7 +418,7 @@ def standardize_sweep_config(sweep_config: dict):
     flat, remaining_bunch = flatten_sweep_config(config_copy['parameters'])
     config_copy['parameters'] = compress_parameter_config(flat)
     global compression_mapping, value_compression_mapping
-
+    
     return config_copy, {'keys': compression_mapping, 'values': value_compression_mapping, 'remaining_bunch': remaining_bunch}
 
 
