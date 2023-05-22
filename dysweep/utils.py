@@ -10,30 +10,31 @@ SEPARATOR = "__CUSTOM_SEPERATOR__"
 IDX_INDICATOR = "__IDX__"
 
 SWEEP_INDICATION = "sweep"
-UNIQUE_NAME_IDENT = "sweep_identifier"
-VALUES_DISPLAY_NAME = "sweep_alias"
+SWEEP_IDENT = "sweep_identifier"
+SWEEP_ALIAS = "sweep_alias"
 SWEEP_GROUP = "sweep_group"
-UPSERT_GROUP_IDENTIFIER = "upsert"
-SWEEP_LIST_OPERATIONS = "sweep_list_operations"
-SWEEP_LIST_INSERT = "sweep_insert"
-SWEEP_LIST_REMOVE = "sweep_remove"
-SWEEP_LIST_OVERWRITE = "sweep_overwrite"
-SWEEP_OPERATION_VAL = "dy_eval"
+
+DY_UPSERT = "dy__upsert"
+DY_LIST_OPERATIONS = "dy__list__operations"
+DY_LIST_INSERT = "dy__insert"
+DY_LIST_REMOVE = "dy__remove"
+DY_LIST_OVERWRITE = "dy__overwrite"
+DY_EVAL = "dy__eval"
 
 SPLIT = "-"
 EXCEPTION_OCCURED = False
 
 SPECIAL_KEYS = [
     SWEEP_INDICATION,
-    UNIQUE_NAME_IDENT,
-    VALUES_DISPLAY_NAME,
+    SWEEP_IDENT,
+    SWEEP_ALIAS,
     SWEEP_GROUP,
-    SWEEP_LIST_OPERATIONS,
-    UPSERT_GROUP_IDENTIFIER,
-    SWEEP_OPERATION_VAL,
-    SWEEP_LIST_INSERT,
-    SWEEP_LIST_REMOVE,
-    SWEEP_LIST_OVERWRITE,
+    DY_LIST_OPERATIONS,
+    DY_UPSERT,
+    DY_EVAL,
+    DY_LIST_INSERT,
+    DY_LIST_REMOVE,
+    DY_LIST_OVERWRITE,
 ]
 
 compression_mapping = {}
@@ -51,20 +52,20 @@ def compress_parameter_config(parameter_config):
     for key, val in parameter_config.items():
         if isinstance(val, dict):
             inner_dict = val.copy()
-            if UNIQUE_NAME_IDENT in inner_dict:
-                compression_mapping[key] = inner_dict[UNIQUE_NAME_IDENT]
-                inner_dict.pop(UNIQUE_NAME_IDENT)
-            if VALUES_DISPLAY_NAME in inner_dict and "values" in inner_dict:
+            if SWEEP_IDENT in inner_dict:
+                compression_mapping[key] = inner_dict[SWEEP_IDENT]
+                inner_dict.pop(SWEEP_IDENT)
+            if SWEEP_ALIAS in inner_dict and "values" in inner_dict:
                 new_values = []
                 for idx, value in enumerate(inner_dict["values"]):
-                    if inner_dict[VALUES_DISPLAY_NAME][idx] in value_compression_mapping:
+                    if inner_dict[SWEEP_ALIAS][idx] in value_compression_mapping:
                         raise Exception(
-                            f"Value {inner_dict[VALUES_DISPLAY_NAME][idx]} is already used in the sweep config"
+                            f"Value {inner_dict[SWEEP_ALIAS][idx]} is already used in the sweep config"
                         )
-                    value_compression_mapping[inner_dict[VALUES_DISPLAY_NAME][idx]] = value
-                    new_values.append(inner_dict[VALUES_DISPLAY_NAME][idx])
+                    value_compression_mapping[inner_dict[SWEEP_ALIAS][idx]] = value
+                    new_values.append(inner_dict[SWEEP_ALIAS][idx])
                 inner_dict["values"] = new_values
-                inner_dict.pop(VALUES_DISPLAY_NAME)
+                inner_dict.pop(SWEEP_ALIAS)
             parameter_config[key] = inner_dict
 
     all_keys = list(parameter_config.keys())
@@ -207,92 +208,98 @@ def upsert_config(args: th.Union[th.Dict, th.List],
     if current_path is None:
         current_path = []
     if root_args is None:
-        root_args = [x for x in args] if isinstance(
-            args, list) else {k: v for k, v in args.items()}
-
+        root_args = args
+        
     try:
         if isinstance(args, list):
             if isinstance(sweep_config, dict):
-                if SWEEP_LIST_OPERATIONS in sweep_config:
-                    ops = sweep_config.pop(SWEEP_LIST_OPERATIONS)
+                if DY_LIST_OPERATIONS in sweep_config:
+                    ops = sweep_config.pop(DY_LIST_OPERATIONS)
+                    
+                    # Convert operations from dictionary to a list
                     if not isinstance(ops, list):
-                        raise Exception(
-                            f"Expected a list for {SWEEP_LIST_OPERATIONS} but got: {type(ops)}")
+                        real_ops = [None for _ in range(len(ops.keys()))]
+                        for key, val in ops.items():
+                            real_ops[int(key[len(IDX_INDICATOR):])] = val
+                        ops = real_ops
+                    
+                    
                     for op in ops:
                         if len(op.keys()) != 1:
                             raise Exception(
                                 "Any sweep list operation should be a dictionary with a single key")
-                        if SWEEP_LIST_INSERT in op:
+                        if DY_LIST_INSERT in op:
                             val = None
-                            idx = op[SWEEP_LIST_INSERT]
+                            idx = op[DY_LIST_INSERT]
                             if not isinstance(idx, int):
                                 if isinstance(idx, list):
                                     if len(idx) != 2:
                                         raise Exception(
-                                            f"Expected a list of length 2 for {SWEEP_LIST_INSERT} but got: {idx}")
+                                            f"Expected a list of length 2 for {DY_LIST_INSERT} but got: {idx}")
                                     val = idx[1]
                                     idx = idx[0]
                                 else:
                                     raise Exception(
-                                        f"Expected an integer for {SWEEP_LIST_INSERT} but got: {idx}")
+                                        f"Expected an integer for {DY_LIST_INSERT} but got: {idx}")
                             if idx == -1:
                                 args.append(
                                     sweep_config if val is None else val)
                             else:
                                 args.insert(
                                     idx, sweep_config if val is None else val)
-                        elif SWEEP_LIST_OVERWRITE in op:
+                        elif DY_LIST_OVERWRITE in op:
                             val = None
-                            idx = op[SWEEP_LIST_OVERWRITE]
+                            idx = op[DY_LIST_OVERWRITE]
                             if not isinstance(idx, int):
                                 if isinstance(idx, list):
                                     if len(idx) != 2:
                                         raise Exception(
-                                            f"Expected a list of length 2 for {SWEEP_LIST_OVERWRITE} but got: {idx}")
+                                            f"Expected a list of length 2 for {DY_LIST_OVERWRITE} but got: {idx}")
 
                                     val = idx[1]
                                     idx = idx[0]
                                 else:
                                     raise Exception(
-                                        f"Expected an integer for {SWEEP_LIST_OVERWRITE} but got: {idx}")
+                                        f"Expected an integer for {DY_LIST_OVERWRITE} but got: {idx}")
                             if val is None:
                                 new_arg = upsert_config(
                                     args[idx], sweep_config, current_path + [str(idx)], root_args)
                                 args[idx] = new_arg
                             else:
                                 args[idx] = val
-                        elif SWEEP_LIST_REMOVE in op:
-                            idx = op[SWEEP_LIST_REMOVE]
+                        elif DY_LIST_REMOVE in op:
+                            idx = op[DY_LIST_REMOVE]
                             if not isinstance(idx, int):
                                 raise Exception(
-                                    f"Expected an integer for {SWEEP_LIST_REMOVE} but got: {idx}")
+                                    f"Expected an integer for {DY_LIST_REMOVE} but got: {idx}")
                             args.pop(idx)
                         else:
                             raise Exception(
                                 f"Unknown sweep list operation: {op}")
-                    sweep_config[SWEEP_LIST_OPERATIONS] = ops
+                
+                    sweep_config[DY_LIST_OPERATIONS] = ops
                 else:
                     for key, val in sweep_config.items():
                         args_key = int(key[len(IDX_INDICATOR):])
                         if isinstance(val, dict) or isinstance(val, list):
 
-                            if isinstance(val, dict) and SWEEP_OPERATION_VAL in val:
-                                if isinstance(val[SWEEP_OPERATION_VAL], str):
+                            if isinstance(val, dict) and DY_EVAL in val:
+                                if isinstance(val[DY_EVAL], str):
                                     args[key] = dy.eval(
-                                        val[SWEEP_OPERATION_VAL])(root_args)
+                                        val[DY_EVAL])(root_args)
                                 else:
                                     args[key] = dy.eval(
-                                        **val[SWEEP_OPERATION_VAL])(root_args)
+                                        **val[DY_EVAL])(root_args)
                                 continue
 
                             new_args = upsert_config(
                                 args[args_key], val, current_path + [str(args_key)], root_args)
                             args[args_key] = new_args
 
-                        elif not isinstance(val, str) or val.find(SWEEP_OPERATION_VAL) == -1:
+                        elif not isinstance(val, str) or val.find(DY_EVAL) == -1:
                             args[args_key] = val
                         else:
-                            pat = f"{SWEEP_OPERATION_VAL}\((.*)\)"
+                            pat = f"{DY_EVAL}\((.*)\)"
                             func_to_eval = re.search(pat, val).group(1)
                             args[args_key] = dy.eval(
                                 func_to_eval)(args[args_key])
@@ -303,22 +310,22 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                 for idx, val in enumerate(sweep_config):
                     if isinstance(val, dict) or isinstance(val, list):
 
-                        if isinstance(val, dict) and SWEEP_OPERATION_VAL in val:
-                            if isinstance(val[SWEEP_OPERATION_VAL], str):
+                        if isinstance(val, dict) and DY_EVAL in val:
+                            if isinstance(val[DY_EVAL], str):
                                 args[key] = dy.eval(
-                                    val[SWEEP_OPERATION_VAL])(root_args)
+                                    val[DY_EVAL])(root_args)
                             else:
                                 args[key] = dy.eval(
-                                    **val[SWEEP_OPERATION_VAL])(root_args)
+                                    **val[DY_EVAL])(root_args)
                             continue
 
                         new_args = upsert_config(
                             args[idx], val, current_path + [str(idx)], root_args)
                         args[idx] = new_args
-                    elif not isinstance(val, str) or val.find(SWEEP_OPERATION_VAL) == -1:
+                    elif not isinstance(val, str) or val.find(DY_EVAL) == -1:
                         args[idx] = val
                     else:
-                        pat = f"{SWEEP_OPERATION_VAL}\((.*)\)"
+                        pat = f"{DY_EVAL}\((.*)\)"
                         func_to_eval = re.search(pat, val).group(1)
                         args[idx] = dy.eval(func_to_eval)(args[idx])
 
@@ -336,8 +343,8 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                     return upsert_config(true_args, sweep_config, current_path, root_args)
                 else:
                     all_upsert = []
-                    if UPSERT_GROUP_IDENTIFIER in sweep_config:
-                        all_upsert = sweep_config.pop(UPSERT_GROUP_IDENTIFIER)
+                    if DY_UPSERT in sweep_config:
+                        all_upsert = sweep_config.pop(DY_UPSERT)
                     for key, val in sweep_config.items():
                         if key.startswith(SWEEP_GROUP):
                             all_sweep_group_keys.append(key)
@@ -346,26 +353,26 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                             args[key] = None
                         if isinstance(val, dict) or isinstance(val, list):
 
-                            if isinstance(val, dict) and SWEEP_OPERATION_VAL in val:
-                                if isinstance(val[SWEEP_OPERATION_VAL], str):
+                            if isinstance(val, dict) and DY_EVAL in val:
+                                if isinstance(val[DY_EVAL], str):
                                     args[key] = dy.eval(
-                                        val[SWEEP_OPERATION_VAL])(root_args)
+                                        val[DY_EVAL])(root_args)
                                 else:
                                     args[key] = dy.eval(
-                                        **val[SWEEP_OPERATION_VAL])(root_args)
+                                        **val[DY_EVAL])(root_args)
                                 continue
 
                             new_args = upsert_config(
                                 args[key] if key in args else None, val, current_path + [str(key)], root_args)
                             args[key] = new_args
-                        elif not isinstance(val, str) or val.find(SWEEP_OPERATION_VAL) == -1:
+                        elif not isinstance(val, str) or val.find(DY_EVAL) == -1:
                             args[key] = val
                         else:
-                            pat = f"{SWEEP_OPERATION_VAL}\((.*)\)"
+                            pat = f"{DY_EVAL}\((.*)\)"
                             func_to_eval = re.search(pat, val).group(1)
                             args[key] = dy.eval(func_to_eval)(args[key])
-            elif isinstance(sweep_config, str) and sweep_config.find(SWEEP_OPERATION_VAL) != -1:
-                pat = f"{SWEEP_OPERATION_VAL}\((.*)\)"
+            elif isinstance(sweep_config, str) and sweep_config.find(DY_EVAL) != -1:
+                pat = f"{DY_EVAL}\((.*)\)"
                 func_to_eval = re.search(pat, sweep_config).group(1)
                 return dy.eval(func_to_eval)(args)
             else:
@@ -380,12 +387,12 @@ def upsert_config(args: th.Union[th.Dict, th.List],
             if isinstance(all_upsert, list):
                 for i, val in enumerate(all_upsert):
                     new_args = upsert_config(
-                        args, val, current_path + [f"{UPSERT_GROUP_IDENTIFIER}-{i}"], root_args)
+                        args, val, current_path + [f"{DY_UPSERT}-{i}"], root_args)
                     args = new_args
             elif isinstance(all_upsert, dict):
                 for key, val in all_upsert.items():
                     new_args = upsert_config(
-                        args, val, current_path + [f"{UPSERT_GROUP_IDENTIFIER}-{key}"], root_args)
+                        args, val, current_path + [f"{DY_UPSERT}-{key}"], root_args)
                     args = new_args
         if len(current_path) == 0:
             # Sanity check if any of the nested dicts contain special keys
@@ -465,5 +472,7 @@ def destandardize_sweep_config(
         v, dict) or isinstance(v, list) else v for k, v in sweep_config.items()}
     config_copy = unflatten_sweep_config(
         decompress_parameter_config(config_copy))
+    
     ret = add_where_needed(config_copy, remaining_bunch)
+
     return ret

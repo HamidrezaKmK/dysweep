@@ -7,9 +7,9 @@ from .utils import standardize_sweep_config, destandardize_sweep_config, upsert_
 from wandb.sdk.wandb_run import Run, _run_decorator
 from wandb.sdk import wandb_config
 import warnings
+import copy
 
 METADATA_RUN_NAME_PREFIX = "HIERARCHICAL_SWEEP_"
-ARTIFACT_NAME = "hierarchical_sweep"
 
 base_config: th.Optional[dict] = None
 compression: th.Optional[dict] = None
@@ -18,7 +18,8 @@ compression: th.Optional[dict] = None
 def hierarchical_config(conf):
     if base_config is None or compression is None:
         return conf
-    return upsert_config(base_config, destandardize_sweep_config(conf, compression))
+    # make a deep copy of the base config
+    return upsert_config(copy.deepcopy(base_config), destandardize_sweep_config(conf, compression))
 
 
 def sweep(
