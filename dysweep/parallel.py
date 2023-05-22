@@ -64,10 +64,14 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
                     all_subdirs, key=lambda x: int(x.name.split(SPLIT)[0]))
 
                 # Change the run-name by adding something random to it
+                # if the conf.run_name is None just assign it to None
+                # and wandb will handle the rest.
                 if conf.run_name is not None:
                     r = RandomWords()
                     w = r.get_random_word()
                     run_name = conf.run_name + '-' + w
+                else:
+                    run_name = conf.run_name
 
                 if conf.resume:
                     # Resuming mode
@@ -81,8 +85,8 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
 
                     if conf.use_lightning_logger:
                         # Create a WandbLogger with the resume_id
-                        import lightning.pytorch as pl
-                        logger = pl.WandbLogger(
+                        from lightning.pytorch.loggers import WandbLogger
+                        logger = WandbLogger(
                             project=conf.project,
                             entity=conf.entity,
                             name=run_name,
@@ -118,8 +122,8 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
                     # if the run_id doesn't exist, then create a new run
                     # and create the subdirectory
                     if conf.use_lightning_logger:
-                        import lightning.pytorch as pl
-                        logger = pl.WandbLogger(
+                        from lightning.pytorch.loggers import WandbLogger
+                        logger = WandbLogger(
                             project=conf.project,
                             entity=conf.entity,
                             name=run_name,
@@ -139,6 +143,7 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
                     new_dir_name = f"{len(all_subdirs)+1}{SPLIT}{experiment_id}"
 
                     os.makedirs(checkpoint_dir / new_dir_name)
+
                     # dump a json in checkpoint_dir/run_id containing the sweep config
                     with open(checkpoint_dir / new_dir_name / "sweep_config.json", "w") as f:
                         json.dump(sweep_config, f)

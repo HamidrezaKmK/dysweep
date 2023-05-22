@@ -407,11 +407,12 @@ def upsert_config(args: th.Union[th.Dict, th.List],
 
 def standardize_sweep_config(sweep_config: dict):
     global remaining_bunch
-    config_copy = {k: v.copy() if isinstance(
-        v, dict) else v for k, v in sweep_config.items()}
+    config_copy = {k: copy.deepcopy(v) if isinstance(
+        v, dict) or isinstance(v, list) else v for k, v in sweep_config.items()}
     flat, remaining_bunch = flatten_sweep_config(config_copy['parameters'])
     config_copy['parameters'] = compress_parameter_config(flat)
     global compression_mapping, value_compression_mapping
+
     return config_copy, {'keys': compression_mapping, 'values': value_compression_mapping, 'remaining_bunch': remaining_bunch}
 
 
@@ -454,8 +455,8 @@ def destandardize_sweep_config(
         compression_mapping = mapping['keys']
         value_compression_mapping = mapping['values']
         remaining_bunch = mapping['remaining_bunch']
-    config_copy = {k: v.copy() if isinstance(
-        v, dict) else v for k, v in sweep_config.items()}
+    config_copy = {k: copy.deepcopy(v) if isinstance(
+        v, dict) or isinstance(v, list) else v for k, v in sweep_config.items()}
     config_copy = unflatten_sweep_config(
         decompress_parameter_config(config_copy))
     ret = add_where_needed(config_copy, remaining_bunch)
