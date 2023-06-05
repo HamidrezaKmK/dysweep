@@ -118,6 +118,8 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
 
                     # create a new checkpoint directory for the inner function
                     new_checkpoint_dir = checkpoint_dir / new_dir_name
+                    
+                    experiment_id = resume_id
                 else:
                     # if the run_id doesn't exist, then create a new run
                     # and create the subdirectory
@@ -168,8 +170,13 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
                 if len(params) != 3 or list(params.keys())[0] != "config" or list(params.keys())[1] != "logger" or list(params.keys())[2] != "checkpoint_dir":
                     raise ValueError(
                         "the run function should have the exact following parameters in order: (config, logger, checkpoint_dir)")
-
-                ret = function(sweep_config, logger, new_checkpoint_dir)
+                try:
+                    ret = function(sweep_config, logger, new_checkpoint_dir)
+                except Exception as e:
+                    # write exception into an err-log.txt file in the checkpoint_dir
+                    with open(new_checkpoint_dir / "err-log.txt", "w") as f:
+                        f.write(traceback.format_exc())
+                    raise e
             else:
                 # check the function signature matches
                 # the one we expect.
@@ -184,7 +191,13 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
                 if len(params) != 2 or list(params.keys())[0] != "config" or list(params.keys())[1] != "checkpoint_dir":
                     raise ValueError(
                         "the run function should have the exact following parameters in order: (config, checkpoint_dir)")
-                ret = function(sweep_config, new_checkpoint_dir)
+                try:
+                    ret = function(sweep_config, new_checkpoint_dir)
+                except Exception as e:
+                    # write exception into an err-log.txt file in the checkpoint_dir
+                    with open(new_checkpoint_dir / "err-log.txt", "w") as f:
+                        f.write(traceback.format_exc())
+                    raise e
 
             # remove the entire new_checkpoint_dir if the function has finished
             # running.
@@ -193,6 +206,8 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
             shutil.rmtree(new_checkpoint_dir)
 
             return ret
+        
+        
         if conf.resume:
             for _ in range(conf.count):
                 if check_non_empty(checkpoint_dir):
