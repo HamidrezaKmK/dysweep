@@ -9,6 +9,7 @@ import shutil
 import os
 import traceback
 import inspect
+import threading
 
 SPLIT = '-'
 
@@ -151,7 +152,7 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
                     with open(checkpoint_dir / new_dir_name / "sweep_config.json", "w") as f:
                         json.dump(sweep_config, f, indent=4, sort_keys=True)
 
-                new_checkpoint_dir = checkpoint_dir / new_dir_name
+                    new_checkpoint_dir = checkpoint_dir / new_dir_name
             except Exception as e:
                 print(traceback.format_exc())
                 raise e
@@ -204,14 +205,24 @@ def dysweep_run_resume(conf: ResumableSweepConfig, function: th.Callable):
             shutil.copyfile(new_checkpoint_dir / "sweep_config.json",
                             checkpoint_dir / f"{experiment_id}-config.json")
             shutil.rmtree(new_checkpoint_dir)
-
+            # finish the wandb run so that later .init calls can resume different ones
+            wandb.finish()
+            
             return ret
         
         
         if conf.resume:
             for _ in range(conf.count):
                 if check_non_empty(checkpoint_dir):
-                    modified_function()
+                    # run modified_function in a separate thread and wait for it to finish
+                    # before running the agent.
+                    # this is to ensure that the function is running before the agent
+                    # starts.
+                    modified_function_thread = threading.Thread(
+                        target=modified_function)
+                    modified_function_thread.start()
+                    modified_function_thread.join()
+                    
                 else:
                     break
         else:

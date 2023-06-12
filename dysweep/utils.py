@@ -211,12 +211,6 @@ def upsert_config(args: th.Union[th.Dict, th.List],
     if root_args is None:
         root_args = args
 
-    # print("000000000000000-------000000000000000")
-    # print("args")
-    # pprint(args)
-    # print("sweep_config")
-    # pprint(sweep_config)
-
     try:
         if isinstance(args, list):
             if isinstance(sweep_config, dict):
