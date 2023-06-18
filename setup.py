@@ -1,7 +1,7 @@
 from setuptools import setup, find_packages
 from dysweep import __version__
 
-with open("README.md", encoding="utf-8") as f:
+with open("readme_pypi.md", encoding="utf-8") as f:
     long_description = f.read()
 
 setup(
@@ -9,7 +9,7 @@ setup(
     packages=find_packages(include=["dysweep", "dysweep.*"]),
     version=__version__,
     license="Apache License 2.0",
-    description="A toolset for dynamic python code manipulations",
+    description="Use Weights and Biases Sweeps for Dynamic Configuration generation.",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Hamid Kamkari",
@@ -17,6 +17,7 @@ setup(
     url="https://github.com/HamidrezaKmK/dysweep",
     keywords=[
         "dynamic configurations",
+        "large scale experiments",
         "deep learning",
         "sweeps",
         "hyperparameter tuning",
