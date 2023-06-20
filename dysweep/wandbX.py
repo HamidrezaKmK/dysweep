@@ -8,6 +8,7 @@ from wandb.sdk.wandb_run import Run, _run_decorator
 from wandb.sdk import wandb_config
 import warnings
 import copy
+from pprint import pprint
 
 METADATA_RUN_NAME_PREFIX = "HIERARCHICAL_SWEEP_"
 
@@ -18,7 +19,7 @@ compression: th.Optional[dict] = None
 def hierarchical_config(conf):
     if base_config is None or compression is None:
         return conf
-    # make a deep copy of the base config
+    # make a deep copy of the base config and upsert it with the current config
     return upsert_config(copy.deepcopy(base_config), destandardize_sweep_config(conf, compression))
 
 
@@ -37,6 +38,15 @@ def sweep(
     I ended up with this implementation, because wandb has not yet released the
     Public API, so I had to use the artifacts capability for it to work.
     """
+    # import these three variables from .utils: 
+    # compression_mapping = {}
+    # value_compression_mapping = {}
+    # remaining_bunch = {}
+    from .utils import compression_mapping, value_compression_mapping, remaining_bunch
+    compression_mapping.clear()
+    value_compression_mapping.clear()
+    remaining_bunch.clear()
+    
     # (1) change the sweep_config to a standard sweep_config
     sweep_standard, compression = standardize_sweep_config(sweep_config)
     sweep_metadata = {'base_config': base_config, 'compression': compression}
