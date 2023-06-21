@@ -1,0 +1,5 @@
+
+
+# for tutorial and testing
+torchvision
+tqdm
