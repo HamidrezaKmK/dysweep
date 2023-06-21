@@ -33,3 +33,8 @@ You can install the Dysweep library through [PyPi](https://pypi.org/project/dysw
 ```shell
 pip install dysweep
 ```
+
+## Tutorial and Use-Cases
+
+We selected a standard task in deep learning - image classification - and utilized various convolutional models and datasets to demonstrate the broad capabilities of Dysweep. We subjected this problem to multiple configurations through our pipeline. For a hands-on understanding of the process, you can refer to our detailed Jupyter notebook available [here](./tutorials/image_classification.ipynb).
+
