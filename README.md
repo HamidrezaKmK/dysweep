@@ -38,3 +38,12 @@ pip install dysweep
 
 We selected a standard task in deep learning - image classification - and utilized various convolutional models and datasets to demonstrate the broad capabilities of Dysweep. We subjected this problem to multiple configurations through our pipeline. For a hands-on understanding of the process, you can refer to our detailed Jupyter notebook available [here](./tutorials/image_classification.ipynb).
 
+Make sure to install all the requirements before running the tutorial section:
+
+```bash
+# The requirements of the main package itself
+pip install -r requirements.txt
+# The requirements for running the examples
+pip install -r requirements-testing.txt
+```
+
