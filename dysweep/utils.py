@@ -198,9 +198,8 @@ def sanity_check_special_keys(conf: th.Union[dict, list], current_path: list):
         for idx, val in enumerate(conf):
             if isinstance(val, dict) or isinstance(val, list):
                 sanity_check_special_keys(val, current_path + [str(idx)])
+                
 # overwrite args recursively
-
-
 def upsert_config(args: th.Union[th.Dict, th.List],
                   sweep_config: th.Union[th.Dict, th.List, int, float, str],
                   current_path: th.Optional[th.List[str]] = None,
@@ -417,9 +416,6 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                 args = sweep_config
 
         if len(current_path) == 0:
-            # print("Final config:")
-            # pprint(args)
-
             # Sanity check if any of the nested dicts contain special keys
             # If they do, then we need to throw an error
             # This is because we don't want to allow the user to specify
@@ -439,9 +435,19 @@ def upsert_config(args: th.Union[th.Dict, th.List],
             e.args += ("Configuration to upsert: " +
                        json.dumps(sweep_config, indent=2),)
         raise e
-    # print("After upsert:")
-    # pprint(args)
-    # print("000000000000000-------000000000000000")
+    # Change all the __IDX__ arguments to a list
+    # if that is the case here
+    if isinstance(args, dict):
+        is_list_pretender = True
+        for key in args.keys():
+            if not key.startswith(IDX_INDICATOR):
+                is_list_pretender = False
+        if is_list_pretender:
+            all_list_items = [None for _ in range(len(args.keys()))]
+            for key in args.keys():
+                idx = int(key[len(IDX_INDICATOR):])
+                all_list_items[idx] = args[key]
+            args = all_list_items
     return args
 
 
