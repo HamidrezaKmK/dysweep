@@ -102,19 +102,22 @@ def dysweep_run_resume(
             The entire configuration given as a ResumableSweepConfig object.
         function:
             This is a function that *YOU* have implemented and has the following signature:
+            
             1. function(config, checkpoint_dir)
                 Takes in the configuration and the checkpoint_dir associated with the run.
                 You can store anything you want in the `checkpoint_dir` and then implement your
                 own checkpoint retrieval procedure so that `function` can resume too.
+                
             2. function(config, logger, checkpoint_dir)
                 If you are using Pytorch Lightning, the W&B logger is wrapped in a WandbLogger object
                 which has some external properties. We have also made the code Lightning comaptible.
                 If `use_lightning_logger` is set to `True` in the configurations, then the function
                 takes in the logger as well.
-        default_root_dir:
+            
+        default_root_dir: optional(Path or str)
             This is a required argument, you can specify a root directory in which all the checkpoint logs
             and everything related to the library is being stored.
-        custom_checkpoint_dir:
+        custom_checkpoint_dir: optional(Path or str)
             For checkpoints in specific, you can also define a custom_checkpoint_dir under the root_dir where
             the checkpoints will be stored.
         sweep_configuration: dict
@@ -160,9 +163,13 @@ def dysweep_run_resume(
             lightning logger wrapper.
     Returns:
         It returns either one of the following:
+        
         1. Returns the `sweep_id` if a sweep is instantiated.
+        
         2. Returns the output of the function if the configuration only tries to run a single experiment.
+        
         3. Otherwise, it will return None.
+        
     """
     # if configuration is not given, then create it from the
     # input arguments
