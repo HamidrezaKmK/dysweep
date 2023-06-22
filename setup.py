@@ -15,6 +15,12 @@ setup(
     author="Hamid Kamkari",
     author_email="hamidrezakamkari@gmail.com",
     url="https://github.com/HamidrezaKmK/dysweep",
+    entry_points={
+        'console_scripts' : [
+            'dysweep_create = dysweep.console:create_sweep',
+            'dysweep_run_resume = dysweep.console:run_resume_sweep'
+        ]
+    },
     keywords=[
         "dynamic configurations",
         "large scale experiments",
