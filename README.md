@@ -34,6 +34,47 @@ You can install the Dysweep library through [PyPi](https://pypi.org/project/dysw
 pip install dysweep
 ```
 
+## Usage
+Once the Dysweep library is successfully installed, it comes with two scripts:
+
+- One script to initialize a sweep based on a defined base configuration
+- Another script to run agents, as well as to resume or re-run specified configurations
+A sweep configuration can be defined via a `config.yaml` file. This configuration file can then be utilized in the command-line to run the desired function as follows:
+```bash
+create_sweep -c config.yaml
+```
+The `config.yaml` file is a standard [ResumanbleSweepConfig](./dysweep/parallel.py) configuration file. It includes the following key fields:
+1. `base_config`: Defines the base configuration for creating the sweep.
+2. `sweep_configuration`: Specifies the hierarchical configuration used to update (upsert) the base configuration.
+3. `project`: Identifies the project name under which the sweep is created.
+4. `entity`: Designates the Weights & Biases (WandB) entity employed in the sweep creation.
+
+You can also find additional parameters from `ResumanbleSweepConfig` that may be of interest from the [source code](./dysweep/parallel.py).
+
+For instance, you can run the following command:
+```bash
+create_sweep --config config.yaml --project <my_project> --entity <my_entity>
+```
+Once you've executed the function, it will output a sweep identifier. This identifier can be used across multiple machines to run various sweep configurations.
+
+In addition, you can utilize the `run_resume_sweep` script to execute the agent. This script allows you to define the sweep identifier and the number of run counts with a specific function from a package to run. If you need to resume a run, specify the run identifier and set `resume` to `True`. Detailed guidance is available in our [Tutorial](./tutorials/image_classification.ipynb).
+
+If for example, you have a function `main` in a file denoted by `path.to.my.package`,  Here's an example of running the agent:
+
+```bash
+run_resume_sweep --package <path.to.my.package> --function <main> --sweep_id <sweep_id> --count <run_count>
+```
+
+And here are examples for resuming a single run or multiple runs:
+
+```bash
+run_resume_sweep --package <path.to.my.package> --function <main> --sweep_id <sweep_id> --rerun_id <run_id> --resume True
+```
+
+```bash
+run_resume_sweep --package <path.to.my.package> --function <main> --sweep_id <sweep_id> --count <run_count> --resume True
+```
+
 ## Tutorial and Use-Cases
 
 We selected a standard task in deep learning - image classification - and utilized various convolutional models and datasets to demonstrate the broad capabilities of Dysweep. We subjected this problem to multiple configurations through our pipeline. For a hands-on understanding of the process, you can refer to our detailed Jupyter notebook available [here](./tutorials/image_classification.ipynb).
@@ -46,4 +87,3 @@ pip install -r requirements.txt
 # The requirements for running the examples
 pip install -r requirements-testing.txt
 ```
-

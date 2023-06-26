@@ -68,7 +68,7 @@ def run_resume_sweep():
     denoted by `path.to.my.package`, then you can run the following command:
     
     ```bash
-    
+    run_resume_sweep --config config.yaml --package path.to.my.package --function main
     ```
     
     """
