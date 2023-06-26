@@ -40,6 +40,7 @@ Once the Dysweep library is successfully installed, it comes with two scripts:
 
 - One script to initialize a sweep based on a defined base configuration
 - Another script to run agents, as well as to resume or re-run specified configurations
+  
 A sweep configuration can be defined via a `config.yaml` file. This configuration file can then be utilized in the command-line to run the desired function as follows:
 ```bash
 dysweep_create -c config.yaml
@@ -58,7 +59,7 @@ dysweep_create --config config.yaml --project <my_project> --entity <my_entity>
 ```
 Once you've executed the function, it will output a sweep identifier. This identifier can be used across multiple machines to run various sweep configurations.
 
-In addition, you can utilize the `run_resume_sweep` script to execute the agent. This script allows you to define the sweep identifier and the number of run counts with a specific function from a package to run. If you need to resume a run, specify the run identifier and set `resume` to `True`. Detailed guidance is available in our [Tutorial](./tutorials/image_classification.ipynb).
+In addition, you can utilize the `dysweep_run_resume` script to execute the agent. This script allows you to define the sweep identifier and the number of run counts with a specific function from a package to run. If you need to resume a run, specify the run identifier and set `resume` to `True`. Detailed guidance is available in our [Tutorial](./tutorials/image_classification.ipynb).
 
 If for example, you have a function `main` in a file denoted by `path.to.my.package`,  Here's an example of running the agent:
 
