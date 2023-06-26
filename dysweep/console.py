@@ -18,7 +18,7 @@ def create_sweep():
     You can define a configuration using a configuration file `config.yaml` and then run this function using the command-line.
     
     ```bash
-    create_sweep -c config.yaml
+    dysweep_create -c config.yaml
     ```
     
     The configuration file is a standard ResumanbleSweepConfig configuration file that contains the following fields:
@@ -37,7 +37,7 @@ def create_sweep():
     An example:
     
     ```bash
-    create_sweep --config config.yaml --project <my_project> --entity <my_entity>
+    dysweep_create --config config.yaml --project <my_project> --entity <my_entity>
     ```
     
     After running the function, the sweep identifier would be displayed which can be used across 
@@ -68,7 +68,7 @@ def run_resume_sweep():
     denoted by `path.to.my.package`, then you can run the following command:
     
     ```bash
-    run_resume_sweep --config config.yaml --package path.to.my.package --function main
+    dysweep_run_resume --config config.yaml --package path.to.my.package --function main
     ```
     
     """

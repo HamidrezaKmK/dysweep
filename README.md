@@ -41,7 +41,7 @@ Once the Dysweep library is successfully installed, it comes with two scripts:
 - Another script to run agents, as well as to resume or re-run specified configurations
 A sweep configuration can be defined via a `config.yaml` file. This configuration file can then be utilized in the command-line to run the desired function as follows:
 ```bash
-create_sweep -c config.yaml
+dysweep_create -c config.yaml
 ```
 The `config.yaml` file is a standard [ResumanbleSweepConfig](./dysweep/parallel.py) configuration file. It includes the following key fields:
 1. `base_config`: Defines the base configuration for creating the sweep.
@@ -53,7 +53,7 @@ You can also find additional parameters from `ResumanbleSweepConfig` that may be
 
 For instance, you can run the following command:
 ```bash
-create_sweep --config config.yaml --project <my_project> --entity <my_entity>
+dysweep_create --config config.yaml --project <my_project> --entity <my_entity>
 ```
 Once you've executed the function, it will output a sweep identifier. This identifier can be used across multiple machines to run various sweep configurations.
 
@@ -62,17 +62,17 @@ In addition, you can utilize the `run_resume_sweep` script to execute the agent.
 If for example, you have a function `main` in a file denoted by `path.to.my.package`,  Here's an example of running the agent:
 
 ```bash
-run_resume_sweep --package <path.to.my.package> --function <main> --sweep_id <sweep_id> --count <run_count>
+dysweep_run_resume --package <path.to.my.package> --function <main> --sweep_id <sweep_id> --count <run_count>
 ```
 
 And here are examples for resuming a single run or multiple runs:
 
 ```bash
-run_resume_sweep --package <path.to.my.package> --function <main> --sweep_id <sweep_id> --rerun_id <run_id> --resume True
+dysweep_run_resume --package <path.to.my.package> --function <main> --sweep_id <sweep_id> --rerun_id <run_id> --resume True
 ```
 
 ```bash
-run_resume_sweep --package <path.to.my.package> --function <main> --sweep_id <sweep_id> --count <run_count> --resume True
+dysweep_run_resume --package <path.to.my.package> --function <main> --sweep_id <sweep_id> --count <run_count> --resume True
 ```
 
 ## Tutorial and Use-Cases
