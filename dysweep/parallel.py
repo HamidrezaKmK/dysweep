@@ -393,6 +393,7 @@ def dysweep_run_resume(
                     raise ValueError(
                         "the function passed to `dysweep_run_resume` should have the exact following parameters in order: (config, logger, checkpoint_dir)")
                 try:
+                    wandb.config.update({'dy_config': sweep_config})
                     ret = function(sweep_config, logger, new_checkpoint_dir)
                 except Exception as e:
                     # write exception into an err-log.txt file in the checkpoint_dir
@@ -414,6 +415,7 @@ def dysweep_run_resume(
                     raise ValueError(
                         "the function passed to `dysweep_run_resume` should have the exact following parameters in order: (config, checkpoint_dir)")
                 try:
+                    wandb.config.update({'dy_config': sweep_config})
                     ret = function(sweep_config, new_checkpoint_dir)
                 except Exception as e:
                     # write exception into an err-log.txt file in the checkpoint_dir
