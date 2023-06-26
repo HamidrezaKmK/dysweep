@@ -2,10 +2,8 @@
 
 ![PyPI](https://img.shields.io/badge/PyPI-Compatible-green?style=for-the-badge&logo=PyPI)
 
-#### Use Weights & Biases Sweeps for Everything!
-Dysweep is an innovative Python library designed to extend and enhance the functionalities of the [Weights and Biases (WandB) sweep library](https://docs.wandb.ai/guides/sweeps). Dysweep is built with the belief that an entire experiment should be executable through a configuration dictionary, whether it's formatted as a YAML or JSON file.
 
-# Table of Contents
+## Table of Contents
 
 - [Features](#features)
 - [Applications](#applications)
@@ -14,6 +12,10 @@ Dysweep is an innovative Python library designed to extend and enhance the funct
 - [Visualizing the Sweep](#visualizing-the-sweep)
 - [Tutorial and Use-Cases](#tutorial-and-use-cases)
 
+
+
+#### Use Weights & Biases Sweeps for Everything!
+Dysweep is an innovative Python library designed to extend and enhance the functionalities of the [Weights and Biases (WandB) sweep library](https://docs.wandb.ai/guides/sweeps). Dysweep is built with the belief that an entire experiment should be executable through a configuration dictionary, whether it's formatted as a YAML or JSON file.
 
 ## Features
 
