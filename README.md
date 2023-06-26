@@ -77,6 +77,17 @@ dysweep_run_resume --package <path.to.my.package> --function <main> --sweep_id <
 dysweep_run_resume --package <path.to.my.package> --function <main> --sweep_id <sweep_id> --count <run_count> --resume True
 ```
 
+## Visualizing the Sweep
+
+Using the `sweep_alias` and `sweep_identifier` values, each of the subtrees of the directory you are sweeping upon will be visualized as the `sweep_identifier` value you've set for it to be. This is especially useful when you have a particular knob in your configuration that you want to sweep over, but it is burried deep within the hierarchical configuration. 
+
+As for values, we know that with dysweep the values we sweep upon are no longer just a primitive type, but rather a dictionary. In order to visualize the values, we have to specify a `sweep_alias` for each of the values we want to visualize. This `sweep_alias` will be a key that sits instead of those values for better visualization.
+
+In addition to that, each of the runs will contain a `dy_config` in their `wandb.config` that you can check from the weights and biases UI. Using these configurations, you can filter runs, group them, or compare them. For example, if we have a configuration hierarchy where the dataset type is in `dataset.type`, we can filter runs by dataset type by using the following query:
+
+```
+dy_config.dataset.type = "cifar10"
+```
 ## Tutorial and Use-Cases
 
 We selected a standard task in deep learning - image classification - and utilized various convolutional models and datasets to demonstrate the broad capabilities of Dysweep. We subjected this problem to multiple configurations through our pipeline. For a hands-on understanding of the process, you can refer to our detailed Jupyter notebook available [here](./tutorials/image_classification.ipynb).
