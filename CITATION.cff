@@ -1,17 +1,22 @@
 cff-version: 1.2.0
-title: '"DySweep": Use W&B Sweep for Everything!'
+title: '"DySweep": Enhanced Weights and Biases Sweeps for Systematic Experimentation'
 message: >-
   If you use this software, please cite it using the
   metadata from this file.
 type: software
 authors:
-  - given-names: Hamid
+  - given-names: Hamid, Hamidreza
     family-names: Kamkari
     email: hamidrezakamkari@gmail.com
 repository-code: "https://github.com/HamidrezaKmK/dysweep"
 abstract: >-
-  A python package for TODO
+  Dysweep is a powerful Python library designed to enhance the functionality of Weights and Biases sweeps. With Dysweep, conducting systematic and efficient deep learning experiments becomes a breeze. Its features include checkpointing for the Sweep Server, allowing for the resumption of specific runs, and the ability to run sweeps over hierarchies, eliminating the need for hard-coded selection between different classes. Inspired by DyPy, Dysweep provides a versatile configuration set, enabling the definition of experiments at any level of abstraction. Whether it's large-scale hyperparameter tuning or parallel execution of experiments, Dysweep empowers researchers with a systematic and streamlined approach to deep learning experimentation.
 keywords:
   - Lazy Configurations
-license: APACHE
+  - Weights and Biases
+  - Sweep
+  - Hierarchical Configuration
+  - Deep Learning
+  - Experiments
+license: MIT
 date-released: "2023-05-21"
