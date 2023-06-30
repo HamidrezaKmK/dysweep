@@ -12,6 +12,7 @@
 
 
 [![PyPI version](https://badge.fury.io/py/dysweep.svg)](https://pypi.org/project/dysweep/)
+[![DOI](https://zenodo.org/badge/643277847.svg)](https://zenodo.org/badge/latestdoi/643277847)
 [![Slack](https://img.shields.io/badge/chat-on%20slack-red.svg)](https://join.slack.com/t/dysweep/shared_invite/zt-1ynkfdpdc-wiYHkiLzjrZ8yGqYkM9brQ)
 
 </div>
