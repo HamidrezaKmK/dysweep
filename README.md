@@ -15,10 +15,11 @@
 [![DOI](https://zenodo.org/badge/643277847.svg)](https://zenodo.org/badge/latestdoi/643277847)
 [![Slack](https://img.shields.io/badge/chat-on%20slack-red.svg)](https://join.slack.com/t/dysweep/shared_invite/zt-1ynkfdpdc-wiYHkiLzjrZ8yGqYkM9brQ)
 
-</div>
+
 
 ![Bird's Eye View](./images/main-figure.svg)
 Use the extended capabilities of *Dysweep* library on top of Weights & Biases for fast and comprehensive experimentation in your research projects.
+</div>
 
 ## Table of Contents
 
