@@ -12,6 +12,8 @@
 
 
 [![PyPI version](https://badge.fury.io/py/dysweep.svg)](https://pypi.org/project/dysweep/)
+[![Slack](https://img.shields.io/badge/chat-on%20slack-red.svg)](https://join.slack.com/t/dysweep/shared_invite/zt-1ynkfdpdc-wiYHkiLzjrZ8yGqYkM9brQ)
+
 </div>
 
 ![Bird's Eye View](./images/main-figure.svg)
