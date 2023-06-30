@@ -13,5 +13,5 @@ abstract: >-
   A python package for TODO
 keywords:
   - Lazy Configurations
-license: APACHE
+license: MIT
 date-released: "2023-05-21"
