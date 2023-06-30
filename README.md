@@ -27,6 +27,7 @@ Use the extended capabilities of *Dysweep* library on top of Weights & Biases fo
 - [Usage](#usage)
 - [Visualizing the Sweep](#visualizing-the-sweep)
 - [Tutorial and Use-Cases](#tutorial-and-use-cases)
+- [An Image Classification Example](./tutorials/image_classification.ipynb)
 - [License](#license)
 
 
