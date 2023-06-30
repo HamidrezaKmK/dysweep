@@ -4,9 +4,9 @@
 <h1>
 <big><b><i>Dysweep</i></b></big><br/>
 </h1>
-<h3>
+<h4>
 <i>Generic hierarchical configurations and resumable runs on Weights & Biases for Research</i>
-</h3>
+</h4>
 
 
 
