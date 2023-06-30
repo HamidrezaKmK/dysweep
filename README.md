@@ -131,6 +131,6 @@ pip install -r requirements-testing.txt
 
 ## License
 
-Dysweep is licensed under the [Apache License 2.0](./LICENSE).
+Dysweep is released under [MIT License](./LICENSE).
 
 

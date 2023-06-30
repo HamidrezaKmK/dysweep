@@ -8,7 +8,7 @@ setup(
     name="dysweep",
     packages=find_packages(include=["dysweep", "dysweep.*"]),
     version=__version__,
-    license="Apache License 2.0",
+    license='MIT',
     description="Use Weights and Biases Sweeps for Dynamic Configuration generation.",
     long_description=long_description,
     long_description_content_type="text/markdown",
