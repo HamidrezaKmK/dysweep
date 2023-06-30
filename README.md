@@ -1,6 +1,6 @@
 <div align="center">
 
-# *Dysweep*
+# *Dysweep: Hierarchical configurations and resumable runs on Weights & Biases*
 
 [![PyPI version](https://badge.fury.io/py/dysweep.svg)](https://pypi.org/project/dysweep/)
 
