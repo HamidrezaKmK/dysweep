@@ -12,6 +12,7 @@
 - [Usage](#usage)
 - [Visualizing the Sweep](#visualizing-the-sweep)
 - [Tutorial and Use-Cases](#tutorial-and-use-cases)
+- [License](#license)
 
 
 
@@ -113,3 +114,9 @@ pip install -r requirements.txt
 # The requirements for running the examples
 pip install -r requirements-testing.txt
 ```
+
+## License
+
+Dysweep is licensed under the [Apache License 2.0](./LICENSE).
+
+
