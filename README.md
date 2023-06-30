@@ -9,6 +9,7 @@
 Use the extended capabilities of *Dysweep* library on top of Weights & Biases for fast and comprehensive experimentation in your research projects.
 
 </div>
+
 ## Table of Contents
 
 - [Features](#features)
