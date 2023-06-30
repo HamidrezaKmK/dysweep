@@ -1,14 +1,21 @@
+
 <div align="center">
 
-# *Dysweep: Hierarchical configurations and resumable runs on Weights & Biases*
+<h1>
+<big><b><i>Dysweep</i></b></big><br/>
+</h1>
+<h3>
+<i>Generic hierarchical configurations and resumable runs on Weights & Biases for Research</i>
+</h3>
+
+
+
 
 [![PyPI version](https://badge.fury.io/py/dysweep.svg)](https://pypi.org/project/dysweep/)
-
+</div>
 
 ![Bird's Eye View](./images/main-figure.svg)
 Use the extended capabilities of *Dysweep* library on top of Weights & Biases for fast and comprehensive experimentation in your research projects.
-
-</div>
 
 ## Table of Contents
 
