@@ -2,6 +2,7 @@
 
 ![PyPI](https://img.shields.io/badge/PyPI-Compatible-green?style=for-the-badge&logo=PyPI)
 
+![Bird's Eye View](./images/main-figure.svg)
 
 ## Table of Contents
 
