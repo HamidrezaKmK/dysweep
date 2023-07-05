@@ -11,6 +11,7 @@ import traceback
 import inspect
 import threading
 from pprint import pprint
+import dypy as dy
 
 SPLIT = '-'
 
@@ -28,6 +29,10 @@ class ResumableSweepConfig:
     rerun_id: th.Optional[str] = None
     run_name: th.Optional[str] = None
     sweep_id: th.Optional[th.Union[int, str]] = None
+    # The following is a dypy callable that can change the name
+    # of the runs according to the produced configuration after
+    # upsertion. It can be used for visualization purposes.
+    run_name_changer: th.Optional[th.Union[str, th.Dict[str, str]]] = None
     #
     use_lightning_logger: bool = False
     #
@@ -60,6 +65,7 @@ def dysweep_run_resume(
     rerun_id: th.Optional[str] = None,
     run_name: th.Optional[str] = None,
     sweep_id: th.Optional[th.Union[int, str]] = None,
+    run_name_changer: th.Optional[th.Union[str, th.Dict[str, str]]] = None,
     use_lightning_logger: th.Optional[bool] = None,
     method: th.Optional[str] = None,
     metric: th.Optional[str] = None,
@@ -158,6 +164,11 @@ def dysweep_run_resume(
             The sweep name
         goal: optional(str)
             The goal used for the sweep.
+        run_name_changer: union(str, function)
+            This function takes in the configuration hierarchy `conf` and the `run_name`
+            and returns a `run_name` appropriately. This is useful when you want to change
+            the run_name based on the configuration; mostly comes in handy for visualization
+            purposes.
         use_lightning_logger: optional(bool) = False
             When set to True, it will pass an additional argument `logger` to `function` that contains the
             lightning logger wrapper.
@@ -186,6 +197,7 @@ def dysweep_run_resume(
             rerun_id=rerun_id,
             run_name=run_name,
             sweep_id=sweep_id,
+            run_name_changer=run_name_changer,
             use_lightning_logger=use_lightning_logger,
             method=method,
             metric=metric,
@@ -217,6 +229,8 @@ def dysweep_run_resume(
             conf.run_name = run_name
         if sweep_id is not None:
             conf.sweep_id = sweep_id
+        if run_name_changer is not None:
+            conf.run_name_changer = run_name_changer
         if use_lightning_logger is not None:
             conf.use_lightning_logger = use_lightning_logger
         if method is not None:
@@ -233,6 +247,16 @@ def dysweep_run_resume(
         raise ValueError("project should be given to the dysweep run and resume.")
     if function is None and sweep_id is not None:
         raise ValueError("function should be given to the dysweep run and resume when sweep_id is given.")
+
+    # turn run_name_changer into a callable
+    if conf.run_name_changer is None:
+        conf.run_name_changer = lambda conf, run_name: run_name
+    elif isinstance(conf.run_name_changer, str):
+        conf.run_name_changer = dy.eval_function(conf.run_name_changer)
+    elif isinstance(conf.run_name_changer, dict):
+        conf.run_name_changer = dy.eval_function(**conf.run_name_changer)
+    else:
+        raise ValueError("run_name_changer should be either a string or a dictionary.")
 
     if conf.sweep_id is not None:
         if conf.default_root_dir is None:
@@ -253,7 +277,7 @@ def dysweep_run_resume(
         # Assume that function is well-formed.
         # in that case, modified_function will handle all the resumption
         # logic so that function can be run as if it was a normal function.
-        def modified_function():
+        def modified_function(ran_from_sweep: bool = False):
             """
             This function handles extracting the logger, configuration, and checkpoint_dir
             and calls `function` internally.
@@ -342,28 +366,41 @@ def dysweep_run_resume(
                         )
 
                 else:
+                    init_args = {
+                        'name': run_name,
+                    }
+                    if not ran_from_sweep:
+                        init_args['project'] = conf.project
+                        init_args['entity'] = conf.entity
                     # if the run_id doesn't exist, then create a new run
                     # and create the subdirectory
                     if conf.use_lightning_logger:
                         from lightning.pytorch.loggers import WandbLogger
-                        logger = WandbLogger(
-                            project=conf.project,
-                            entity=conf.entity,
-                            name=run_name,
-                        )
+                        logger = WandbLogger(**init_args)
+                        experiment_id = logger.experiment.id
+                        sweep_config = hierarchical_config(
+                            logger.experiment.config)
+                        # Change the run_name according to the run_name_changer
+                        new_run_name = conf.run_name_changer(sweep_config, run_name)
+                        init_args['name'] = new_run_name
+                        logger = WandbLogger(**init_args)
                         experiment_id = logger.experiment.id
                         sweep_config = hierarchical_config(
                             logger.experiment.config)
                     else:
                         import wandb
-                        run_ = wandb.init(
-                            project=conf.project,
-                            entity=conf.entity,
-                            name=run_name,
-                        )
+                        
+                        run_ = wandb.init(**init_args)
                         experiment_id = run_.id
-
                         sweep_config = hierarchical_config(wandb.config)
+                        # Change the run_name according to the run_name_changer
+                        new_run_name = conf.run_name_changer(sweep_config, run_name)
+                        init_args['name'] = new_run_name
+                        wandb.finish()
+                        run_ = wandb.init(**init_args)
+                        experiment_id = run_.id
+                        sweep_config = hierarchical_config(wandb.config)
+                        
 
                     new_dir_name = f"{get_max(all_subdirs)+1}{SPLIT}{experiment_id}"
 
@@ -449,7 +486,6 @@ def dysweep_run_resume(
                             target=modified_function)
                         modified_function_thread.start()
                         modified_function_thread.join()
-
                     else:
                         break
             else:
@@ -458,7 +494,7 @@ def dysweep_run_resume(
         elif conf.rerun_id:
             return modified_function()
         else:
-            agent(conf.sweep_id, function=modified_function,
+            agent(conf.sweep_id, function=functools.partial(modified_function, ran_from_sweep=True),
                   entity=conf.entity, project=conf.project, count=conf.count)
     else:
         # check if conf.sweep_configuration complies to the
