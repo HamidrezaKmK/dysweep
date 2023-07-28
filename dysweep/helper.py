@@ -1,3 +1,8 @@
+from dataclasses import fields
+from dataclasses import dataclass, is_dataclass
+from typing import get_type_hints, get_origin, get_args
+import typing as th
+
 def parse_dictionary_onto_dataclass(input_dict: dict, dataclass_type):
     # NOTE: jsonargparse has probably implemented something similar to this
     all_fields = [f.name for f in fields(dataclass_type)]
