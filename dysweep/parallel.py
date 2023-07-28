@@ -500,9 +500,10 @@ def dysweep_run_resume(
         # check if conf.sweep_configuration complies to the
         # standard sweep format or not.
         all_keys = list(conf.sweep_configuration.keys())
-        if 'method' not in all_keys or 'metric' not in all_keys or 'parameters' not in all_keys:
+        if 'method' not in all_keys or 'metric' not in all_keys or 'parameters' not in all_keys or 'name' not in all_keys:
             # enter defaults
             conf.sweep_configuration = {
+                'name': conf.sweep_name,
                 'method': conf.method,
                 'metric': {
                     'name': conf.metric,
