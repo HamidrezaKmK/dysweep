@@ -51,7 +51,7 @@ def get_max(all_subdirs):
     identifiers = [int(d.name.split(SPLIT)[0]) for d in all_subdirs]
     return max(identifiers)
 
-def _dysweep_run_resume(
+def dysweep_run_resume(
     conf: th.Optional[ResumableSweepConfig] = None,
     function: th.Optional[th.Callable] = None,
     default_root_dir: th.Optional[th.Union[Path, str]] = None,
@@ -436,6 +436,9 @@ def _dysweep_run_resume(
                     # write exception into an err-log.txt file in the checkpoint_dir
                     with open(new_checkpoint_dir / "err-log.txt", "w") as f:
                         f.write(traceback.format_exc())
+                    
+                    # print out the traceback
+                    print("Exception while running function, find logs at: ", new_checkpoint_dir / "err-log.txt")
                     raise e
             else:
                 # check the function signature matches
@@ -458,6 +461,8 @@ def _dysweep_run_resume(
                     # write exception into an err-log.txt file in the checkpoint_dir
                     with open(new_checkpoint_dir / "err-log.txt", "w") as f:
                         f.write(traceback.format_exc())
+                    # print out the traceback
+                    print("Exception while running function, find logs at: ", new_checkpoint_dir / "err-log.txt")
                     raise e
 
             # remove the entire new_checkpoint_dir if the function has finished
@@ -524,11 +529,3 @@ def _dysweep_run_resume(
             wandb.finish()
         return sweep_id
 
-@functools.wraps(_dysweep_run_resume)
-def dysweep_run_resume(*args, **kwargs):
-    try:
-        _dysweep_run_resume(*args, **kwargs)
-    except Exception as e:
-        print("Exception at final run of sweep")
-        print(traceback.format_exc())
-        raise e
