@@ -33,6 +33,8 @@ class ResumableSweepConfig:
     # of the runs according to the produced configuration after
     # upsertion. It can be used for visualization purposes.
     run_name_changer: th.Optional[th.Union[str, th.Dict[str, str]]] = None
+    # whether to keep or delete checkpoints
+    delete_checkpoints: bool = True
     #
     use_lightning_logger: bool = False
     #
@@ -66,6 +68,7 @@ def dysweep_run_resume(
     run_name: th.Optional[str] = None,
     sweep_id: th.Optional[th.Union[int, str]] = None,
     run_name_changer: th.Optional[th.Union[str, th.Dict[str, str]]] = None,
+    delete_checkpoints: th.Optional[bool] = None,
     use_lightning_logger: th.Optional[bool] = None,
     method: th.Optional[str] = None,
     metric: th.Optional[str] = None,
@@ -198,6 +201,7 @@ def dysweep_run_resume(
             run_name=run_name,
             sweep_id=sweep_id,
             run_name_changer=run_name_changer,
+            delete_checkpoints=delete_checkpoints,
             use_lightning_logger=use_lightning_logger,
             method=method,
             metric=metric,
@@ -231,6 +235,8 @@ def dysweep_run_resume(
             conf.sweep_id = sweep_id
         if run_name_changer is not None:
             conf.run_name_changer = run_name_changer
+        if delete_checkpoints is not None:
+            conf.delete_checkpoints = delete_checkpoints
         if use_lightning_logger is not None:
             conf.use_lightning_logger = use_lightning_logger
         if method is not None:
