@@ -479,7 +479,7 @@ def dysweep_run_resume(
                 # remove the file new_checkpoint_dir / "sweep_config.json"
                 os.remove(new_checkpoint_dir / "sweep_config.json")
                 # move the entire new_checkpoint_dir to the final directory
-                shutil.move(new_checkpoint_dir, checkpoint_dir / f"{experiment_id}-final")
+                shutil.move(new_checkpoint_dir, checkpoint_dir / f"{experiment_id}_final")
             else:
                 shutil.rmtree(new_checkpoint_dir)
                 
