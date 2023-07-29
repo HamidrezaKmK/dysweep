@@ -469,8 +469,12 @@ def dysweep_run_resume(
             # running.
             shutil.copyfile(new_checkpoint_dir / "sweep_config.json",
                             checkpoint_dir / f"{experiment_id}-config.json")
-            # clean up after yourself to avoid excess memory consumption
-            shutil.rmtree(new_checkpoint_dir)
+            if conf.delete_checkpoints:
+                shutil.rmtree(new_checkpoint_dir)
+            else:
+                # copy everything from new_checkpoint_dir to checkpoint_dir
+                shutil.copytree(new_checkpoint_dir, checkpoint_dir / "{experiment_id}-final")
+                
             # finish the wandb run so that later .init calls can resume different ones
             wandb.finish()
 
