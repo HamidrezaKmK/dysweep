@@ -54,7 +54,9 @@ def create_sweep():
         "-c", "--config", action=ActionConfigFile, help="Path to a configuration file in json or yaml format."
     )
     args = parser.parse_args()
-
+    
+    sys.path.append('.')
+    
     dysweep_run_resume(args)
 
 def run_resume_sweep():
