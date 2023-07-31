@@ -258,9 +258,9 @@ def dysweep_run_resume(
     if conf.run_name_changer is None:
         conf.run_name_changer = lambda conf, run_name: run_name
     elif isinstance(conf.run_name_changer, str):
-        conf.run_name_changer = dy.eval_function(conf.run_name_changer)
+        conf.run_name_changer = dy.eval(conf.run_name_changer)
     elif isinstance(conf.run_name_changer, dict):
-        conf.run_name_changer = dy.eval_function(**conf.run_name_changer)
+        conf.run_name_changer = dy.eval(**conf.run_name_changer)
     else:
         raise ValueError("run_name_changer should be either a string or a dictionary.")
 
@@ -277,9 +277,12 @@ def dysweep_run_resume(
             checkpoint_dir = Path(conf.default_root_dir) / \
                 f"checkpoints-{conf.sweep_id}"
         # create the checkpoint directory if it doesn't exist
-        if not os.path.exists(checkpoint_dir):
-            os.makedirs(checkpoint_dir)
-
+        try:
+            if not os.path.exists(checkpoint_dir):
+                os.makedirs(checkpoint_dir)
+        except FileExistsError as e:
+            # ignore file exists error due to concurrency
+            pass
         # Assume that function is well-formed.
         # in that case, modified_function will handle all the resumption
         # logic so that function can be run as if it was a normal function.
