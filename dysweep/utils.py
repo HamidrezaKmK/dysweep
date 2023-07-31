@@ -198,8 +198,9 @@ def sanity_check_special_keys(conf: th.Union[dict, list], current_path: list):
         for idx, val in enumerate(conf):
             if isinstance(val, dict) or isinstance(val, list):
                 sanity_check_special_keys(val, current_path + [str(idx)])
-                
-# overwrite args recursively
+
+# TODO: this is the result of incremental and backwards compatible changes
+# it should be cleaned up: overwrite args recursively
 def upsert_config(args: th.Union[th.Dict, th.List],
                   sweep_config: th.Union[th.Dict, th.List, int, float, str],
                   current_path: th.Optional[th.List[str]] = None,
@@ -287,8 +288,8 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                                     args[key] = dy.eval(
                                         val[DY_EVAL])(root_args)
                                 else:
-                                    args[key] = dy.eval(
-                                        **val[DY_EVAL])(root_args)
+                                    args[key] = upsert_config(args[key], dy.eval(
+                                        **val[DY_EVAL])(root_args), current_path, root_args=root_args)
                                 continue
 
                             new_args = upsert_config(
@@ -314,8 +315,12 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                                 args[key] = dy.eval(
                                     val[DY_EVAL])(root_args)
                             else:
-                                args[key] = dy.eval(
-                                    **val[DY_EVAL])(root_args)
+                                args[key] = upsert_config(
+                                    args[key], 
+                                    dy.eval(**val[DY_EVAL])(root_args),
+                                    current_path=current_path,
+                                    root_args=root_args,
+                                )
                             continue
 
                         new_args = upsert_config(
@@ -340,35 +345,52 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                     true_args[int(key[len(IDX_INDICATOR):])] = args[key]
                 return upsert_config(true_args, sweep_config, current_path, root_args)
             else:
+                
+                
                 all_upsert = []
                 if DY_UPSERT in sweep_config:
                     all_upsert = sweep_config.pop(DY_UPSERT)
-                for key, val in sweep_config.items():
-                    if key.startswith(SWEEP_GROUP):
-                        all_sweep_group_keys.append(key)
-                        continue
-                    if key not in args:
-                        args[key] = None
-                    if isinstance(val, dict) or isinstance(val, list):
-
-                        if isinstance(val, dict) and DY_EVAL in val:
-                            if isinstance(val[DY_EVAL], str):
-                                args[key] = dy.eval(
-                                    val[DY_EVAL])(root_args)
-                            else:
-                                args[key] = dy.eval(
-                                    **val[DY_EVAL])(root_args)
+                
+                if DY_EVAL in sweep_config:
+                    if len(sweep_config.keys()) != 1:
+                        raise Exception(
+                            f"{DY_EVAL} should be the only key in the dict")
+                    args = upsert_config(
+                        args,
+                        dy.eval(**sweep_config[DY_EVAL])(root_args),
+                        current_path=current_path,
+                        root_args=root_args,
+                    )
+                else:
+                    for key, val in sweep_config.items():
+                        if key.startswith(SWEEP_GROUP):
+                            all_sweep_group_keys.append(key)
                             continue
+                        if key not in args:
+                            args[key] = None
+                        if isinstance(val, dict) or isinstance(val, list):
+                            if isinstance(val, dict) and DY_EVAL in val:
+                                if isinstance(val[DY_EVAL], str):
+                                    args[key] = dy.eval(
+                                        val[DY_EVAL])(root_args)
+                                else:
+                                    args[key] = upsert_config(
+                                        args[key], 
+                                        dy.eval(**val[DY_EVAL])(root_args),
+                                        current_path=current_path,
+                                        root_args=root_args,
+                                    )
+                                continue
 
-                        new_args = upsert_config(
-                            args[key] if key in args else None, val, current_path + [str(key)], root_args)
-                        args[key] = new_args
-                    elif not isinstance(val, str) or val.find(DY_EVAL) == -1:
-                        args[key] = val
-                    else:
-                        pat = f"{DY_EVAL}\((.*)\)"
-                        func_to_eval = re.search(pat, val).group(1)
-                        args[key] = dy.eval(func_to_eval)(args[key])
+                            new_args = upsert_config(
+                                args[key] if key in args else None, val, current_path + [str(key)], root_args)
+                            args[key] = new_args
+                        elif not isinstance(val, str) or val.find(DY_EVAL) == -1:
+                            args[key] = val
+                        else:
+                            pat = f"{DY_EVAL}\((.*)\)"
+                            func_to_eval = re.search(pat, val).group(1)
+                            args[key] = dy.eval(func_to_eval)(args[key])
             # sort all_sweep_group_keys
             all_sweep_group_keys.sort()
             for key in all_sweep_group_keys:
@@ -397,8 +419,12 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                     if len(sweep_config.keys()) != 1:
                         raise Exception(
                             f"{DY_EVAL} should be the only key in the dict")
-                    args = dy.eval(
-                        **sweep_config[DY_EVAL])(root_args)
+                    args = upsert_config(
+                        args, 
+                        dy.eval(**sweep_config[DY_EVAL])(root_args),
+                        current_path=current_path,
+                        root_args=root_args,
+                    )
                 else:
                     args = {}
                     for key, val in sweep_config.items():
