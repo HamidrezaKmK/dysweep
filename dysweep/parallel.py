@@ -36,7 +36,7 @@ class ResumableSweepConfig:
     # upsertion. It can be used for visualization purposes.
     run_name_changer: th.Optional[th.Union[str, th.Dict[str, str]]] = None
     # whether to keep or delete checkpoints
-    delete_checkpoints: bool = True
+    delete_checkpoints: bool = False
     #
     use_lightning_logger: bool = False
     #
@@ -482,7 +482,7 @@ def dysweep_run_resume(
                             checkpoint_dir / f"{experiment_id}-config.json")
             if not conf.delete_checkpoints:
                 # move the entire new_checkpoint_dir to the final directory
-                shutil.move(new_checkpoint_dir, checkpoint_dir / f"{experiment_id}_final")
+                shutil.move(new_checkpoint_dir, checkpoint_dir / f"{new_run_name}_{experiment_id}_final")
             else:
                 try:
                     shutil.rmtree(new_checkpoint_dir)
