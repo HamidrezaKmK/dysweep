@@ -304,12 +304,13 @@ def dysweep_run_resume(
                 # Change the run-name by adding something random to it
                 # if the conf.run_name is None just assign it to None
                 # and wandb will handle the rest.
+                r = RandomWords()
+                w = r.get_random_word()
                 if conf.run_name is not None:
-                    r = RandomWords()
-                    w = r.get_random_word()
                     run_name = conf.run_name + '-' + w
                 else:
-                    run_name = conf.run_name
+                    run_name = w
+                conf.run_name = run_name
 
                 if conf.resume or conf.rerun_id:
                     if not conf.rerun_id:
@@ -392,7 +393,7 @@ def dysweep_run_resume(
                         sweep_config = hierarchical_config(
                             logger.experiment.config)
                         # Change the run_name according to the run_name_changer
-                        new_run_name = conf.run_name_changer(sweep_config, run_name if run_name is not None else RandomWords().get_random_word())
+                        new_run_name = conf.run_name_changer(sweep_config, run_name)
                         init_args['name'] = new_run_name
                         logger = WandbLogger(**init_args)
                         experiment_id = logger.experiment.id
@@ -405,7 +406,7 @@ def dysweep_run_resume(
                         experiment_id = run_.id
                         sweep_config = hierarchical_config(wandb.config)
                         # Change the run_name according to the run_name_changer
-                        new_run_name = conf.run_name_changer(sweep_config, run_name if run_name is not None else RandomWords().get_random_word())
+                        new_run_name = conf.run_name_changer(sweep_config, run_name)
                         init_args['name'] = new_run_name
                         wandb.finish()
                         run_ = wandb.init(**init_args)
@@ -475,14 +476,16 @@ def dysweep_run_resume(
                     # print out the traceback
                     print("Exception while running function, find logs at: ", new_checkpoint_dir / "err-log.txt")
                     raise e
-
+            
+            # >> Decommissioning the run
+            
             # remove the entire new_checkpoint_dir if the function has finished
             # running.
             shutil.copyfile(new_checkpoint_dir / "run_config.json",
                             checkpoint_dir / f"{experiment_id}-config.json")
             if not conf.delete_checkpoints:
                 # move the entire new_checkpoint_dir to the final directory
-                shutil.move(new_checkpoint_dir, checkpoint_dir / f"{new_run_name}_{experiment_id}_final")
+                shutil.move(new_checkpoint_dir, checkpoint_dir / f"{conf.run_name}_{experiment_id}_final")
             else:
                 try:
                     shutil.rmtree(new_checkpoint_dir)
