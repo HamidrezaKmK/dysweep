@@ -12,8 +12,10 @@ import inspect
 import threading
 from pprint import pprint
 import dypy as dy
+import time
 
-SPLIT = '-'
+SPLIT = '_-_-_-_'
+
 
 @dataclass
 class ResumableSweepConfig:
@@ -480,10 +482,13 @@ def dysweep_run_resume(
                             checkpoint_dir / f"{experiment_id}-config.json")
             if not conf.delete_checkpoints:
                 # move the entire new_checkpoint_dir to the final directory
-                shutil.copytree(new_checkpoint_dir, checkpoint_dir / f"{experiment_id}_final")
-            
-            shutil.rmtree(new_checkpoint_dir)
-                
+                shutil.move(new_checkpoint_dir, checkpoint_dir / f"{experiment_id}_final")
+            else:
+                try:
+                    shutil.rmtree(new_checkpoint_dir)
+                except OSError as e:
+                    print("Make sure that you are not logging stderr or stdout in here!")
+                    raise e
             # finish the wandb run so that later .init calls can resume different ones
             wandb.finish()
 
