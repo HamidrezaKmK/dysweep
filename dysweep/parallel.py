@@ -392,7 +392,7 @@ def dysweep_run_resume(
                         sweep_config = hierarchical_config(
                             logger.experiment.config)
                         # Change the run_name according to the run_name_changer
-                        new_run_name = conf.run_name_changer(sweep_config, run_name)
+                        new_run_name = conf.run_name_changer(sweep_config, run_name if run_name is not None else RandomWords.get_random_word())
                         init_args['name'] = new_run_name
                         logger = WandbLogger(**init_args)
                         experiment_id = logger.experiment.id
