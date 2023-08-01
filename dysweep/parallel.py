@@ -301,16 +301,7 @@ def dysweep_run_resume(
                 all_subdirs = sorted(
                     all_subdirs, key=lambda x: int(x.name.split(SPLIT)[0]))
 
-                # Change the run-name by adding something random to it
-                # if the conf.run_name is None just assign it to None
-                # and wandb will handle the rest.
-                r = RandomWords()
-                w = r.get_random_word()
-                if conf.run_name is not None:
-                    run_name = conf.run_name + '-' + w
-                else:
-                    run_name = w
-                conf.run_name = run_name
+                
 
                 if conf.resume or conf.rerun_id:
                     if not conf.rerun_id:
@@ -364,7 +355,6 @@ def dysweep_run_resume(
                         logger = WandbLogger(
                             project=conf.project,
                             entity=conf.entity,
-                            name=run_name,
                             id=experiment_id,
                         )
                     else:
@@ -373,11 +363,22 @@ def dysweep_run_resume(
                         wandb.init(
                             project=conf.project,
                             entity=conf.entity,
-                            name=run_name,
                             id=experiment_id,
                         )
 
+                    run_name = wandb.run.name
+                    
                 else:
+                    # Change the run-name by adding something random to it
+                    # if the conf.run_name is None just assign it to None
+                    # and wandb will handle the rest.
+                    r = RandomWords()
+                    w = r.get_random_word()
+                    if conf.run_name is not None:
+                        run_name = conf.run_name + '-' + w
+                    else:
+                        run_name = w
+                    
                     init_args = {
                         'name': run_name,
                     }
@@ -485,7 +486,7 @@ def dysweep_run_resume(
                             checkpoint_dir / f"{experiment_id}-config.json")
             if not conf.delete_checkpoints:
                 # move the entire new_checkpoint_dir to the final directory
-                shutil.move(new_checkpoint_dir, checkpoint_dir / f"{conf.run_name}_{experiment_id}_final")
+                shutil.move(new_checkpoint_dir, checkpoint_dir / f"{run_name}_{experiment_id}_final")
             else:
                 try:
                     shutil.rmtree(new_checkpoint_dir)
