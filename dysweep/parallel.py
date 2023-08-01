@@ -46,7 +46,7 @@ class ResumableSweepConfig:
     sweep_name: th.Optional[str] = 'dysweep'
 
 def check_non_empty(checkpoint_dir):
-    all_subdirs = [d for d in checkpoint_dir.iterdir() if d.is_dir()]
+    all_subdirs = [d for d in checkpoint_dir.iterdir() if d.is_dir() and SPLIT in d.name]
     return len(all_subdirs) > 0
  
 def get_max(all_subdirs):
@@ -297,7 +297,7 @@ def dysweep_run_resume(
                 # list and sort all of the checkpoint subdirectories by the order
                 # they were created.
                 all_subdirs = [
-                    d for d in checkpoint_dir.iterdir() if d.is_dir()]
+                    d for d in checkpoint_dir.iterdir() if d.is_dir() and SPLIT in d.name]
                 all_subdirs = sorted(
                     all_subdirs, key=lambda x: int(x.name.split(SPLIT)[0]))
 
