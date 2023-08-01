@@ -333,7 +333,7 @@ def dysweep_run_resume(
                             id_ = SPLIT.join(d.name.split(SPLIT)[1:])
                             if id_ == experiment_id:
                                 old_dir_name = d.name
-                                config_dir = checkpoint_dir / d.name / "sweep_config.json"
+                                config_dir = checkpoint_dir / d.name / "run_config.json"
 
                     if not os.path.exists(config_dir):
                         raise FileNotFoundError(f"{config_dir} not found! Make sure the rerun_id is actually ran before.")
@@ -416,7 +416,7 @@ def dysweep_run_resume(
                     os.makedirs(checkpoint_dir / new_dir_name)
 
                     # dump a json in checkpoint_dir/run_id containing the sweep config
-                    with open(checkpoint_dir / new_dir_name / "sweep_config.json", "w") as f:
+                    with open(checkpoint_dir / new_dir_name / "run_config.json", "w") as f:
                         json.dump(sweep_config, f, indent=4, sort_keys=True)
 
                     new_checkpoint_dir = checkpoint_dir / new_dir_name
@@ -476,13 +476,11 @@ def dysweep_run_resume(
 
             # remove the entire new_checkpoint_dir if the function has finished
             # running.
-            shutil.copyfile(new_checkpoint_dir / "sweep_config.json",
+            shutil.copyfile(new_checkpoint_dir / "run_config.json",
                             checkpoint_dir / f"{experiment_id}-config.json")
             if not conf.delete_checkpoints:
-                # remove the file new_checkpoint_dir / "sweep_config.json"
-                os.remove(new_checkpoint_dir / "sweep_config.json")
                 # move the entire new_checkpoint_dir to the final directory
-                shutil.move(new_checkpoint_dir, checkpoint_dir / f"{experiment_id}_final")
+                os.rename(new_checkpoint_dir, checkpoint_dir / f"{experiment_id}_final")
             else:
                 shutil.rmtree(new_checkpoint_dir)
                 
