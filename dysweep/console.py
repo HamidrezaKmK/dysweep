@@ -7,10 +7,16 @@ This script contains all the scripts that are accessible in the command-line for
 """
 from jsonargparse import ArgumentParser, ActionConfigFile
 from jsonargparse.actions import ActionConfigFile
+from jsonargparse.actions import Action
 from dysweep import dysweep_run_resume, ResumableSweepConfig
 import importlib
 import sys
+import functools
 
+class CustomAction(Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        setattr(namespace, self.dest, values)
+        
 def create_sweep():
     """
     This is a function designed to run using the command-line to simplify the creation of a sweep.
@@ -59,6 +65,27 @@ def create_sweep():
     
     dysweep_run_resume(args)
 
+
+def parse_dict(value):
+    if isinstance(value, dict):
+        return value
+    elif isinstance(value, str):
+        try:
+            items = value.split()
+            parsed_dict = {}
+            for item in items:
+                key, val = item.split(':')
+                try:
+                    val = int(val)
+                except ValueError:
+                    pass
+                parsed_dict[key] = val
+            return parsed_dict
+        except ValueError:
+            raise argparse.ArgumentTypeError("Invalid dictionary format. Use key:value pairs separated by spaces.")
+    else:
+        raise ValueError("invalid type of parseable object:", type(value))
+
 def run_resume_sweep():
     """
     Using this function, you can run or resume a sweep run using the command line.
@@ -91,8 +118,16 @@ def run_resume_sweep():
         "-f", "--function", type=str, help="Name of the main function."
     )
     
+
+    parser.add_argument('--run_additional_args', action=CustomAction, type=parse_dict, nargs='+')
+
     args = parser.parse_args()
-    # print the root of importlib
+    run_args = {}
+    if hasattr(args, 'run_additional_args') and args.run_additional_args:
+        for run_arg_ in args.run_additional_args:
+            run_args.update(run_arg_)
+        delattr(args, 'run_additional_args')
+
     
     # set the root directory of importlib the same as the directory that is running this function
     sys.path.append('.')
@@ -100,7 +135,9 @@ def run_resume_sweep():
     # from args.package import args.function using importlib
     module = importlib.import_module(args.package)
     func = getattr(module, args.function)
-    
+    func = functools.partial(func, **run_args)
+
+        
     # Remove args.package and args.function from args
     delattr(args, "package")
     delattr(args, "function")

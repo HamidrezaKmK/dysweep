@@ -439,9 +439,9 @@ def dysweep_run_resume(
                 # get the parameters of the function
                 params = sig.parameters
                 # check that the function has two parameters
-                if len(params) != 3 or list(params.keys())[0] != "config" or list(params.keys())[1] != "logger" or list(params.keys())[2] != "checkpoint_dir":
+                if "config" not in params or "logger" not in params or "checkpoint_dir" not in params:
                     raise ValueError(
-                        "the function passed to `dysweep_run_resume` should have the exact following parameters in order: (config, logger, checkpoint_dir)")
+                        "the function passed to `dysweep_run_resume` should take the following parameters: (config, logger, checkpoint_dir)")
                 try:
                     wandb.config.update({'dy_config': sweep_config})
                     ret = function(sweep_config, logger, new_checkpoint_dir)
@@ -464,9 +464,9 @@ def dysweep_run_resume(
                 # get the parameters of the function
                 params = sig.parameters
                 # check that the function has two parameters
-                if len(params) != 2 or list(params.keys())[0] != "config" or list(params.keys())[1] != "checkpoint_dir":
+                if "config" not in params or "checkpoint_dir" not in params:
                     raise ValueError(
-                        "the function passed to `dysweep_run_resume` should have the exact following parameters in order: (config, checkpoint_dir)")
+                        "the function passed to `dysweep_run_resume` should take the following parameters: (config, checkpoint_dir)")
                 try:
                     wandb.config.update({'dy_config': sweep_config})
                     ret = function(sweep_config, new_checkpoint_dir)
