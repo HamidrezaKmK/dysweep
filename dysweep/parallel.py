@@ -13,6 +13,8 @@ import threading
 from pprint import pprint
 import dypy as dy
 import time
+import sys
+from .utils import Tee
 
 SPLIT = '_-_-_-_'
 
@@ -442,17 +444,33 @@ def dysweep_run_resume(
                 if "config" not in params or "logger" not in params or "checkpoint_dir" not in params:
                     raise ValueError(
                         "the function passed to `dysweep_run_resume` should take the following parameters: (config, logger, checkpoint_dir)")
+                    
                 try:
+                    out_file = open(os.path.join(new_checkpoint_dir, 'stdout'), 'a')
+                    err_file = open(os.path.join(new_checkpoint_dir, 'stderr'), 'a')
+                    saved_stderr = sys.stderr
+                    saved_stdout = sys.stdout
+                    sys.stdout = Tee(
+                        primary_file=sys.stdout,
+                        secondary_file=out_file,
+                    )
+                    sys.stderr = Tee(
+                        primary_file=sys.stderr,
+                        secondary_file=err_file,
+                    )
                     wandb.config.update({'dy_config': sweep_config})
                     ret = function(sweep_config, logger, new_checkpoint_dir)
                 except Exception as e:
                     # write exception into an err-log.txt file in the checkpoint_dir
-                    with open(new_checkpoint_dir / "err-log.txt", "w") as f:
-                        f.write(traceback.format_exc())
-                    
-                    # print out the traceback
-                    print("Exception while running function, find logs at: ", new_checkpoint_dir / "err-log.txt")
+                    sys.stderr.write("Exception while running function: ")
+                    sys.stderr.write(traceback.format_exc())
                     raise e
+                finally:
+                    out_file.close()
+                    err_file.close()
+                    sys.stderr = saved_stderr
+                    sys.stdout = saved_stdout
+                    
             else:
                 # check the function signature matches
                 # the one we expect.
@@ -468,15 +486,31 @@ def dysweep_run_resume(
                     raise ValueError(
                         "the function passed to `dysweep_run_resume` should take the following parameters: (config, checkpoint_dir)")
                 try:
+                    out_file = open(os.path.join(new_checkpoint_dir, 'stdout'), 'a')
+                    err_file = open(os.path.join(new_checkpoint_dir, 'stderr'), 'a')
+                    saved_stderr = sys.stderr
+                    saved_stdout = sys.stdout
+                    sys.stdout = Tee(
+                        primary_file=sys.stdout,
+                        secondary_file=out_file,
+                    )
+                    sys.stderr = Tee(
+                        primary_file=sys.stderr,
+                        secondary_file=err_file,
+                    )
                     wandb.config.update({'dy_config': sweep_config})
                     ret = function(sweep_config, new_checkpoint_dir)
                 except Exception as e:
                     # write exception into an err-log.txt file in the checkpoint_dir
-                    with open(new_checkpoint_dir / "err-log.txt", "w") as f:
-                        f.write(traceback.format_exc())
-                    # print out the traceback
-                    print("Exception while running function, find logs at: ", new_checkpoint_dir / "err-log.txt")
+                    sys.stderr.write("Exception while running function: ")
+                    sys.stderr.write(traceback.format_exc())
                     raise e
+                finally:
+                    out_file.close()
+                    err_file.close()
+                    sys.stderr = saved_stderr
+                    sys.stdout = saved_stdout
+                    
             
             # >> Decommissioning the run
             

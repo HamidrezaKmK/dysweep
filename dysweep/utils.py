@@ -42,6 +42,34 @@ value_compression_mapping = {}
 remaining_bunch = {}
 
 
+class Tee:
+    """This class allows for redirecting of stdout and stderr"""
+    def __init__(self, primary_file, secondary_file):
+        self.primary_file = primary_file
+        self.secondary_file = secondary_file
+
+        self.encoding = self.primary_file.encoding
+
+    # TODO: Should redirect all attrs to primary_file if not found here.
+    def isatty(self):
+        return self.primary_file.isatty()
+
+    def fileno(self):
+        return self.primary_file.fileno()
+
+    def write(self, data):
+        # We get problems with ipdb if we don't do this:
+        if isinstance(data, bytes):
+            data = data.decode()
+
+        self.primary_file.write(data)
+        self.secondary_file.write(data)
+
+    def flush(self):
+        self.primary_file.flush()
+        self.secondary_file.flush()
+
+
 def compress_parameter_config(parameter_config):
     current_tri = {}
 
