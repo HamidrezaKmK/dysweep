@@ -248,7 +248,7 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                     # Convert operations from dictionary to a list
                     if not isinstance(ops, list):
                         real_ops = [None for _ in range(len(ops.keys()))]
-                        for key, val in ops.items():
+                        for key, val in sorted(ops.items()):
                             real_ops[int(key[len(IDX_INDICATOR):])] = val
                         ops = real_ops
 
@@ -307,7 +307,7 @@ def upsert_config(args: th.Union[th.Dict, th.List],
 
                     sweep_config[DY_LIST_OPERATIONS] = ops
                 else:
-                    for key, val in sweep_config.items():
+                    for key, val in sorted(sweep_config.items()):
                         args_key = int(key[len(IDX_INDICATOR):])
                         if isinstance(val, dict) or isinstance(val, list):
 
@@ -390,7 +390,7 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                         root_args=root_args,
                     )
                 else:
-                    for key, val in sweep_config.items():
+                    for key, val in sorted(sweep_config.items()):
                         if key.startswith(SWEEP_GROUP):
                             all_sweep_group_keys.append(key)
                             continue
@@ -432,7 +432,7 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                         args, val, current_path + [f"{DY_UPSERT}-{i}"], root_args)
                     args = new_args
             elif isinstance(all_upsert, dict):
-                for key, val in all_upsert.items():
+                for key, val in sorted(all_upsert.items()):
                     new_args = upsert_config(
                         args, val, current_path + [f"{DY_UPSERT}-{key}"], root_args)
                     args = new_args
@@ -455,7 +455,7 @@ def upsert_config(args: th.Union[th.Dict, th.List],
                     )
                 else:
                     args = {}
-                    for key, val in sweep_config.items():
+                    for key, val in sorted(sweep_config.items()):
                         args[key] = None
                         args[key] = upsert_config(
                             args[key], val, current_path=current_path + [str(key)], root_args=root_args)
