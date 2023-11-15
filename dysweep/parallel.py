@@ -15,6 +15,8 @@ import dypy as dy
 import time
 import sys
 from .utils import Tee
+import gc
+import torch
 
 SPLIT = '_-_-_-_'
 
@@ -46,6 +48,8 @@ class ResumableSweepConfig:
     metric: th.Optional[str] = 'dysweep_default'
     goal: th.Optional[str] = 'minimize'
     sweep_name: th.Optional[str] = 'dysweep'
+    
+    mark_preempting: bool = False
 
 def check_non_empty(checkpoint_dir):
     all_subdirs = [d for d in checkpoint_dir.iterdir() if d.is_dir() and SPLIT in d.name]
@@ -78,6 +82,7 @@ def dysweep_run_resume(
     metric: th.Optional[str] = None,
     goal: th.Optional[str] = None,
     sweep_name: th.Optional[str] = None,
+    mark_preempting: th.Optional[bool] = None
 ):
     """
     This is a multi-purpose function that does either one of the following functionalities:
@@ -176,6 +181,8 @@ def dysweep_run_resume(
             and returns a `run_name` appropriately. This is useful when you want to change
             the run_name based on the configuration; mostly comes in handy for visualization
             purposes.
+        mark_preempting: 
+            If set to true, then wandb.mark_preempting() would be called!
         use_lightning_logger: optional(bool) = False
             When set to True, it will pass an additional argument `logger` to `function` that contains the
             lightning logger wrapper.
@@ -211,6 +218,7 @@ def dysweep_run_resume(
             metric=metric,
             sweep_name=sweep_name,
             goal=goal,
+            mark_preempting=mark_preempting,
         )
     else:
         # if for any argument x, the value of x is not the default value
@@ -251,6 +259,8 @@ def dysweep_run_resume(
             conf.sweep_name = sweep_name
         if goal is not None:
             conf.goal = goal
+        if mark_preempting is not None:
+            conf.mark_preempting = mark_preempting
         
         
     if conf.project is None:
@@ -367,6 +377,8 @@ def dysweep_run_resume(
                             entity=conf.entity,
                             id=experiment_id,
                         )
+                        if conf.mark_preempting:
+                            wandb.mark_preempting()
 
                     run_name = wandb.run.name
                     
@@ -458,6 +470,7 @@ def dysweep_run_resume(
                         primary_file=sys.stderr,
                         secondary_file=err_file,
                     )
+                    # TODO: make it so that the logged sweep also contains nested list and dictionary architectures
                     wandb.config.update({'dy_config': sweep_config})
                     ret = function(sweep_config, logger, new_checkpoint_dir)
                 except Exception as e:
@@ -529,7 +542,8 @@ def dysweep_run_resume(
                     raise e
             # finish the wandb run so that later .init calls can resume different ones
             wandb.finish()
-
+            torch.cuda.empty_cache()
+            gc.collect()
             return ret
 
 
